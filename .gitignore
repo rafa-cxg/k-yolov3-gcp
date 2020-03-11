@@ -1,9 +1,8 @@
-*.jpg
-*.jpeg
+
 *.weights
 *.h5
 *.pyc
-*.xml
+*.pb
 *.mp4
 *.DS_Store
-*.bak
+

@@ -18,13 +18,14 @@ from keras.models import load_model
 
 
 config = tf.compat.v1.ConfigProto(
-    gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.9)
+    gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=1),allow_soft_placement=True, \
+                  log_device_placement=True
     # device_count = {'GPU': 1}
 )
 config.gpu_options.allow_growth = True
 session = tf.compat.v1.Session(config=config)
-tf.compat.v1.keras.backend.set_session(session)
-
+#tf.compat.v1.keras.backend.set_session(session)
+session.run(tf.global_variables_initializer())
 def create_training_instances(
     train_annot_folder,
     train_image_folder,
@@ -115,6 +116,7 @@ def create_model(
     warmup_batches, 
     ignore_thresh, 
     multi_gpu, 
+    pretrained_weights,
     saved_weights_name, 
     lr,
     grid_scales,
@@ -124,7 +126,7 @@ def create_model(
     class_scale  
 ):
     if multi_gpu > 1:
-        with tf.device('/cpu:0'):
+        with tf.device('/gpu:0'):
             template_model, infer_model = create_yolov3_model(
                 nb_class            = nb_class, 
                 anchors             = anchors, 
@@ -156,11 +158,11 @@ def create_model(
         )  
 
     # load the pretrained weight if exists, otherwise load the backend weight only
-    if os.path.exists(saved_weights_name): 
+    if os.path.exists(pretrained_weights): 
         print("\nLoading pretrained weights.\n")
-        template_model.load_weights(saved_weights_name)
+        template_model.load_weights(pretrained_weights)
     else:
-        template_model.load_weights("backend.h5", by_name=True)       
+        template_model.load_weights("???.h5", by_name=True)       
 
     if multi_gpu > 1:
         train_model = multi_gpu_model(template_model, gpus=multi_gpu)
@@ -242,6 +244,7 @@ def _main_(args):
         warmup_batches      = warmup_batches,
         ignore_thresh       = config['train']['ignore_thresh'],
         multi_gpu           = multi_gpu,
+        pretrained_weights  = config['train']['pretrained_weights'],
         saved_weights_name  = config['train']['saved_weights_name'],
         lr                  = config['train']['learning_rate'],
         grid_scales         = config['train']['grid_scales'],
