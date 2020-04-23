@@ -206,7 +206,7 @@ def _conv_block(inp, convs, do_skip=True):
             skip_connection = x
         count += 1
         
-        if conv['stride'] > 1: x = ZeroPadding2D(((1,0),(1,0)))(x) # unlike tensorflow darknet prefer left and top paddings
+        if conv['stride'] > 1: x = ZeroPadding2D(((1,0),(1,0)))(x) # unlike tensorflow darknet prefer left and top paddings，填充图像上部左部
         x = Conv2D(conv['filter'], 
                    conv['kernel'], 
                    strides=conv['stride'], 
